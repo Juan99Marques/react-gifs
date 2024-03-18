@@ -7,8 +7,55 @@
     <title>GifExpertApp</title>
     <script type="module" crossorigin src="./assets/index-EQboY4To.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-0NnwKIGP.css">
-    <script type="text/javascript" src="/tracker/unomi-web-tracker.min.js"></script>
+    <script type="text/javascript">
+      (function () {
+          const unomiTrackerTestConf = {
+              "scope": "unomi-tracker-test",
+              "site": {
+                  "siteInfo": {
+                      "siteID": "unomi-tracker-test"
+                  }
+              },
+              "page": {
+                  "pageInfo": {
+                      "pageID": "unomi-tracker-test-page",
+                      "pageName": document.title,
+                      "pagePath": document.location.pathname,
+                      "destinationURL": document.location.origin + document.location.pathname,
+                      "language": "en",
+                      "categories": [],
+                      "tags": []
+                  },
+                  "attributes": {},
+                  "consentTypes": []
+              },
+              "events:": [],
+              "wemInitConfig": {
+                  "contextServerUrl": document.location.origin,
+                  "timeoutInMilliseconds": "1500",
+                  "contextServerCookieName": "context-profile-id",
+                  "activateWem": true,
+                  "trackerSessionIdCookieName": "unomi-tracker-test-session-id",
+                  "trackerProfileIdCookieName": "unomi-tracker-test-profile-id"
+              }
+          }
 
+          // generate a new session
+          if (unomiWebTracker.getCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName) == null) {
+              unomiWebTracker.setCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName, unomiWebTracker.generateGuid(), 1);
+          }
+
+          // init tracker with our conf
+          unomiWebTracker.initTracker(unomiTrackerTestConf);
+
+          unomiWebTracker._registerCallback(() => {
+              console.log("Unomi tracker test successfully loaded context", unomiWebTracker.getLoadedContext());
+          }, 'Unomi tracker test callback example');
+
+          // start the tracker
+          unomiWebTracker.startTracker();
+      })();
+  </script>
   </head>
   <body>
     <div id="root"></div>
