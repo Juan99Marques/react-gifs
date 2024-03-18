@@ -1,63 +1,130 @@
+<!--
+~ Licensed to the Apache Software Foundation (ASF) under one or more
+~ contributor license agreements. See the NOTICE file distributed with
+~ this work for additional information regarding copyright ownership.
+~ The ASF licenses this file to You under the Apache License, Version 2.0
+~ (the "License"); you may not use this file except in compliance with
+~ the License. You may obtain a copy of the License at
+~
+~ http://www.apache.org/licenses/LICENSE-2.0
+~
+~ Unless required by applicable law or agreed to in writing, software
+~ distributed under the License is distributed on an "AS IS" BASIS,
+~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+~ See the License for the specific language governing permissions and
+~ limitations under the License.
+-->
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GifExpertApp</title>
-    <script type="module" crossorigin src="./assets/index-EQboY4To.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-0NnwKIGP.css">
+<head>
+    <title>Apache Unomi Web Tracker Test Page</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta http-equiv="Content-Language" content="en"/>
+
+    <script type="text/javascript" src="/tracker/unomi-web-tracker.min.js"></script>
+    <!-- OR use the non minified version to ease developing and debugging (benefit from sourcemap in browser console) -->
+    <!--script type="text/javascript" src="/tracker/unomi-web-tracker.js"></script-->
     <script type="text/javascript">
-      (function () {
-          const unomiTrackerTestConf = {
-              "scope": "unomi-tracker-test",
-              "site": {
-                  "siteInfo": {
-                      "siteID": "unomi-tracker-test"
-                  }
-              },
-              "page": {
-                  "pageInfo": {
-                      "pageID": "unomi-tracker-test-page",
-                      "pageName": document.title,
-                      "pagePath": document.location.pathname,
-                      "destinationURL": document.location.origin + document.location.pathname,
-                      "language": "en",
-                      "categories": [],
-                      "tags": []
-                  },
-                  "attributes": {},
-                  "consentTypes": []
-              },
-              "events:": [],
-              "wemInitConfig": {
-                  "contextServerUrl": document.location.origin,
-                  "timeoutInMilliseconds": "1500",
-                  "contextServerCookieName": "context-profile-id",
-                  "activateWem": true,
-                  "trackerSessionIdCookieName": "unomi-tracker-test-session-id",
-                  "trackerProfileIdCookieName": "unomi-tracker-test-profile-id"
-              }
-          }
+        (function () {
+            const unomiTrackerTestConf = {
+                "scope": "unomi-tracker-test",
+                "site": {
+                    "siteInfo": {
+                        "siteID": "unomi-tracker-test"
+                    }
+                },
+                "page": {
+                    "pageInfo": {
+                        "pageID": "unomi-tracker-test-page",
+                        "pageName": document.title,
+                        "pagePath": document.location.pathname,
+                        "destinationURL": document.location.origin + document.location.pathname,
+                        "language": "en",
+                        "categories": [],
+                        "tags": []
+                    },
+                    "consentTypes": []
+                },
+                "events:": [],
+                "wemInitConfig": {
+                    "contextServerUrl": document.location.origin,
+                    "timeoutInMilliseconds": "1500",
+                    "contextServerCookieName": "context-profile-id",
+                    "activateWem": true,
+                    "trackerSessionIdCookieName": "unomi-tracker-test-session-id",
+                    "trackerProfileIdCookieName": "unomi-tracker-test-profile-id"
+                }
+            }
 
-          // generate a new session
-          if (unomiWebTracker.getCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName) == null) {
-              unomiWebTracker.setCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName, unomiWebTracker.generateGuid(), 1);
-          }
+            // generate a new session
+            if (unomiWebTracker.getCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName) == null) {
+                unomiWebTracker.setCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName, unomiWebTracker.generateGuid(), 1);
+            }
 
-          // init tracker with our conf
-          unomiWebTracker.initTracker(unomiTrackerTestConf);
+            // init tracker with our conf
+            unomiWebTracker.initTracker(unomiTrackerTestConf);
 
-          unomiWebTracker._registerCallback(() => {
-              console.log("Unomi tracker test successfully loaded context", unomiWebTracker.getLoadedContext());
-          }, 'Unomi tracker test callback example');
+            unomiWebTracker._registerCallback(() => {
+                console.log("Unomi tracker test successfully loaded context", unomiWebTracker.getLoadedContext());
+            }, 'Unomi tracker test callback example');
 
-          // start the tracker
-          unomiWebTracker.startTracker();
-      })();
-  </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+            variants = {
+                "var1" : {
+                    content : "variant1",
+                },
+                "var2" : {
+                    content : "variant2",
+                }
+            }
+            unomiWebTracker.registerPersonalizationObject({
+                "id": "testPersonalization",
+                "strategy": "matching-first",
+                "strategyOptions": {"fallback": "var2"},
+                "contents": [{
+                    "id": "var1",
+                    "filters": [{
+                        "condition": {
+                            "type": "profilePropertyCondition",
+                            "parameterValues": {
+                                "propertyName" : "properties.pageViewCount.unomi-tracker-test",
+                                "comparisonOperator" : "greaterThan",
+                                "propertyValueInteger" : 5
+                            }
+                        }
+                    }]
+                }, {
+                    "id": "var2"
+                }]
+            }, variants, false, function (successfulFilters, selectedFilter) {
+                if (selectedFilter) {
+                    document.getElementById(selectedFilter.content).style.display = '';
+                }
+            });
+
+            // start the tracker
+            unomiWebTracker.startTracker();
+        })();
+    </script>
+</head>
+<body>
+<h1>Apache Unomi Web Tracker Test Page</h1>
+
+<p>
+    The current page is sending a page view event using the <strong>Unomi web tracker</strong>.<br/><br/>
+
+    <strong>See the <a href="https://unomi.apache.org/manual/latest/index.html#_unomi_web_tracking_tutorial">Unomi tutorial</a> for details on how to use
+        and setup the prerequisites for this code to work properly.</strong>
+</p>
+
+<p>The line below this one will be personalized depending on whether you have been on this page before.
+    Try reload the page to see the changes.</p>
+
+    <div id="variant1" style="display: none">
+        You have already seen this page 5 times
+    </div>
+    <div id="variant2" style="display: none">
+        Welcome. Please reload this page 5 times until it triggers the personalization change
+    </div>
+
+</body>
 </html>
