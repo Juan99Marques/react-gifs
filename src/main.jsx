@@ -6,6 +6,7 @@ import { GifExpertApp } from './GifExpertApp.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+        <script type="text/javascript" src="/tracker/unomi-web-tracker.min.js"></script>
     <GifExpertApp />
   </React.StrictMode>,
 )
