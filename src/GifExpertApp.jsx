@@ -17,14 +17,13 @@ export const GifExpertApp = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                // Incluye aquí cualquier encabezado de autenticación necesario
             },
             body: JSON.stringify(event)
         });
         return response.json();
     }
 
-    
+
     useEffect(() => {
             const unomiWebTracker = useTracker();
             const unomiTrackerTestConf = {
@@ -112,7 +111,10 @@ export const GifExpertApp = () => {
             unomiWebTracker._registerEvent(event);
             // See the events tracked in console
             console.log("Unomi tracker test successfully tracked event", event);
-            sendEvent(event);
+            const eventSent = sendEvent(event);
+            console.log(eventSent);
+            // log the event that has been sent
+
             
         }, []);
 
