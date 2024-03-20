@@ -1,119 +1,120 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react'
 import { AddCategory, GifGrid } from './components';
-import { useTracker } from "apache-unomi-tracker";
+import {useTracker} from 'apache-unomi-tracker';
 import { Buffer } from 'buffer';
+// Hacer Buffer global para que esté disponible en todo el proyecto
 window.Buffer = Buffer;
 
 
-
 export const GifExpertApp = () => {
+
+    //NO USAR HOOKS DENTRO DE UNA CONDICIONAL
     const [categories, setCategories] = useState(['One Punch']);
 
+
+    const sendEvent =  async (event) => {
+        const response = await fetch('http://localhost:8181/cxs/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Incluye aquí cualquier encabezado de autenticación necesario
+            },
+            body: JSON.stringify(event)
+        });
+        return response.json();
+    }
+
+    
     useEffect(() => {
-        // Este bloque se ejecutará una vez que el componente se monte
-        const unomiWebTracker = useTracker();
-        const unomiTrackerTestConf = {
-            "scope": "systemscope",
-            "site": {
-                "siteInfo": {
-                    "siteID": "unomi-tracker-test"
-                }
-            },
-            "page": {
-                "pageInfo": {
-                    "pageID": "unomi-tracker-test-page",
-                    "pageName": document.title,
-                    "pagePath": document.location.pathname,
-                    "destinationURL": document.location.origin + document.location.pathname,
-                    "language": "en",
-                    "categories": [],
-                    "tags": []
+            const unomiWebTracker = useTracker();
+            const unomiTrackerTestConf = {
+                "scope": "unomi-tracker-test",
+                "site": {
+                    "siteInfo": {
+                        "siteID": "unomi-tracker-test"
+                    }
                 },
-                "attributes": {},
-                "consentTypes": []
-            },
-            "events": [
-                    {
-                        "eventType":"view",
-                        "scope": "systemscope",
-                        "source":{
-                            "itemType": "tracker",
-                            "scope":"systemscope",
-                            "itemId": "systemscope",
-                        },
-                        "target":{
-                            "itemType":"page",
-                            "scope":"systemscope",
-                            "itemId":"homepage",
-                            "properties":{
-                                "pageInfo":{
-                                    "referringURL": document.referrer,
-                                }
-                            }
-                        }
-                    }
-                ]
-            , // Asegúrate de que no hay un typo aquí. Debe ser "events", no "events:".
-            "wemInitConfig": {
-                "contextServerUrl": document.location.origin,
-                "timeoutInMilliseconds": "1500",
-                "contextServerCookieName": "context-profile-id",
-                "activateWem": true,
-                "trackerSessionIdCookieName": "unomi-tracker-test-session-id",
-                "trackerProfileIdCookieName": "unomi-tracker-test-profile-id",
+                "page": {
+                    "pageInfo": {
+                        "pageID": "unomi-tracker-test-page",
+                        "pageName": document.title,
+                        "pagePath": document.location.pathname,
+                        "destinationURL": document.location.origin + document.location.pathname,
+                        "language": "en",
+                        "categories": [],
+                        "tags": []
+                    },
+                    "attributes": {},
+                    "consentTypes": []
+                },
+                "events:": [],
+                "wemInitConfig": {
+                    "contextServerUrl": document.location.origin,
+                    "timeoutInMilliseconds": "1500",
+                    "contextServerCookieName": "context-profile-id",
+                    "activateWem": true,
+                    "trackerSessionIdCookieName": "unomi-tracker-test-session-id",
+                    "trackerProfileIdCookieName": "unomi-tracker-test-profile-id"
+                }
             }
-        };
+        
+            // generate a new session
+            if (unomiWebTracker.getCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName) == null) {
+                unomiWebTracker.setCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName, unomiWebTracker.generateGuid(), 1);
+            }
+        
+            // init tracker with our conf
+            unomiWebTracker.initTracker(unomiTrackerTestConf);
+        
+            unomiWebTracker._registerCallback(() => {
+                console.log("Unomi tracker test successfully loaded context", unomiWebTracker.getLoadedContext());
+                
+            }, 'Unomi tracker test callback example');
+        
+            // start the tracker
+            unomiWebTracker.startTracker();
 
-        // Generar una nueva sesión
-        if (unomiWebTracker.getCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName) === null) {
-            unomiWebTracker.setCookie(unomiTrackerTestConf.wemInitConfig.trackerSessionIdCookieName, unomiWebTracker.generateGuid(), 1);
-        }
-
-        // Iniciar el tracker con nuestra configuración
-        unomiWebTracker.initTracker(unomiTrackerTestConf);
-
-        unomiWebTracker._registerCallback(() => {
-            console.log("Unomi tracker test successfully loaded context", unomiWebTracker.getLoadedContext());
-        }, 'Unomi tracker test callback example');
-
-        // Registrar un evento de vista y loguear en consola
-
-        const event = {
-            eventType: "view",
-            scope: "systemscope",
-            source: {
-                itemType: "tracker",
-                scope: "systemscope",
-                itemId: "systemscope",
-            },
-            target: {
-                itemType: "page",
-                scope: "systemscope",
-                itemId: "homepage",
-                properties: {
-                    pageInfo: {
-                        referringURL: document.referrer,
+            const event = {
+                "eventType": "view",
+                "scope": "unomi-tracker-test",
+                "source": {
+                    "sourceType": "web",
+                    "sourceInfo": {
+                        "sourceID": "unomi-tracker-test-source"
+                    }
+                },
+                "target": {
+                    "targetType": "page",
+                    "targetInfo": {
+                        "pageID": "unomi-tracker-test-page",
+                        "pageName": document.title,
+                        "pagePath": document.location.pathname,
+                        "destinationURL": document.location.origin + document.location.pathname,
+                        "language": "en",
+                        "categories": [],
+                        "tags": []
+                    }
+                },
+                "properties": {
+                    "pageViewEvent": {
+                        "pageViewID": unomiWebTracker.generateGuid(),
+                        "referrer": document.referrer,
+                        "duration": 0,
+                        "search": "",
+                        "searchResultCount": 0,
+                        "searchResultPage": 0,
+                        "pageType": "content",
+                        "scrollDepth": 0
                     }
                 }
             }
-        };
-        unomiWebTracker.buildEvent(event.eventType,event.source, event.target);
-        unomiWebTracker.loadContext();
-        
-
-        //Chequear que el evento se haya registrado
-
-       
-        
-
-        // Iniciar el tracker
-        unomiWebTracker.startTracker();
-        unomiWebTracker._registerEvent(event);
-        console.log("Unomi tracker test successfully registered event", event);
-     
-    }, []); // El arreglo vacío asegura que este efecto solo se ejecute una vez.
-
-
+            // track the event
+            unomiWebTracker._registerEvent(event);
+            // See the events tracked in console
+            console.log("Unomi tracker test successfully tracked event", event);
+            sendEvent(event);
+            
+        }, []);
 
     const handleAdd = () => {
         const newCategory = document.getElementById('newCategory').value;
@@ -122,15 +123,24 @@ export const GifExpertApp = () => {
         } else {
             alert('La categoria debe tener al menos 3 caracteres y no debe estar repetida');
         }
-    };
+
+    }
 
     return (
         <>
             <h1>GifExpertApp</h1>
+
             <AddCategory onNewCategory={handleAdd} />
-            {categories.map(category => (
-                <GifGrid key={category} category={category} />
-            ))}
+
+            {
+                categories.map(category => (
+                    <GifGrid
+                        key={category}
+                        category={category}
+                    />
+                ))
+            }
         </>
-    );
-};
+    )
+
+}
