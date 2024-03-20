@@ -8,10 +8,8 @@ window.Buffer = Buffer;
 
     
 export const GifExpertApp = () => {
-
     //NO USAR HOOKS DENTRO DE UNA CONDICIONAL
     const [categories, setCategories] = useState(['One Punch']);
-
     useEffect(() => {
     const unomiWebTracker = useTracker();
     const unomiTrackerTestConf = {
@@ -70,29 +68,20 @@ export const GifExpertApp = () => {
         },
         target: {
             targetType: "page",
-            targetId: "unomi-tracker-test-page"
+            targetId: "unomi-tracker-test-page",
         }
     });
-    unomiWebTracker._checkUncompleteRegisteredEvents();
+    unomiWebTracker._completeEvent(event);
+    console.log(event.target);
     console.log("Unomi tracker test event", event);
     // Envia el evento
     unomiWebTracker.collectEvent(event, () => {
         console.log("Unomi tracker test event successfully collected");
-    }, () => {
-        console.error("Unomi tracker test event failed to be collected");
+    }, (error) => {
+        console.error("Unomi tracker test event failed to be collected" 
+        + error.message ? ": " + error.message : "", error);
     });
-
     unomiWebTracker._registerEvent(event, true);
-
-    unomiWebTracker.sendClickEvent(event, () => {
-        console.log("Unomi tracker test event successfully sent");
-    }
-    , () => {
-        console.error("Unomi tracker test event failed to be sent");
-    });
-
-    
-   
     }, []);
    
     const handleAdd = () => {
